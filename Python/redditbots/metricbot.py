@@ -58,57 +58,102 @@ def celToFar(celsius):
 def farToCel(faren):
     return round((float(faren) - 32) * 5 / 9, 2)
 
-"""
-def get_instance():
-    # create Reddit instance with info from praw.ini
-    reddit = praw.Reddit('bot1')
-    # Generate refresh token
+def get_token():
+    # Create a temporary instance to retrieve a refresh token
+    reddit_temp = praw.Reddit('bot1')
+
+    # Generate an authorization token
     state = str(random.randint(0,65000))
-    url = reddit.auth.url(duration="permanent", scopes=['identity'], state=state)
+    url = reddit_temp.auth.url(duration="permanent", scopes=['account','flair','history','identity','livemanage','read','save','submit'], state=state)
     print(f"Open this URL in your browser to to authenticate: {url}")
 
+    # Set up a simple redirect URI socket to retrieve the authorization token
     client = receive_connection()
+
+    # Parse the HTTP response
     data = client.recv(1024).decode("utf-8")
     param_tokens = data.split(" ", 2)[1].split("?", 1)[1].split("&")
     params = {
         key: value for (key, value) in [token.split("=") for token in param_tokens]
     }
 
+    # We somehow receive a response with the wrong state. Discard and exit 
     if state != params["state"]:
         send_message(
             client,
             f"State mismatch. Expected{state} Received: {params['state']}",
         )
         return 1
+    # Error happened with authorization request. Print error and exit
     elif "error" in params:
         send_message(client, params["error"])
         return 1
     
-    refresh_token = reddit.auth.authorize(params["code"])
-    send_message(client, f"Refresh token: {refresh_token}")         
+    # Retreive a refresh token by authorizing the instance with the authorization token
+    refresh_token = reddit_temp.auth.authorize(params["code"])
 
-    for line in fileinput.input("praw.ini", inplace=1):
-        if "refresh_token" in line:
-"""
+    # Print refresh token to the command line, send it to the redirect url, and return it
+    print(refresh_token)
+    send_message(client, f"Refresh token: {refresh_token}")
+    return refresh_token
 
-def main():
-    # check if praw.ini already has a valid refresh token
+        
+def receive_connection():
+    """
+    Wait for and then return a connected socket.
+    Opens a TCP connection on port 8080, and waits for a single client.
+    """
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("localhost", 8080))
+    server.listen(1)
+    client = server.accept()[0]
+    server.close()
+    return client
+
+def send_message(client, message):
+    # Send message to client and close the connection.
+    print(message)
+    client.send(f"HTTP/1.1 200 OK\r\n\r\n{message}".encode("utf-8"))
+    client.close()
+
+
+def main():  
+    # check if praw.ini already has a refresh token
     with open("praw.ini", "r") as init:
-        refresh_token_valid = False
         for line in init:
             if "refresh_token" in line:
-                # check if refresh token has expired
-                expire_date = datetime.fromisoformat(init.readline().split("=")[1].strip())
-                if datetime.now(timezone.utc) < expire_date:
-                    refresh_token_valid = True
+                # retrieve refresh token from praw.ini file (praw.Reddit will 
+                # not automatically retrieve token from file during ititialization)
+                refresh_token = line.split("=")[1].strip()
+                break
+    
+    # Try to create a praw.Reddit instance
+    reddit = praw.Reddit('bot1', refresh_token=refresh_token)
 
-    reddit = praw.Reddit('bot1')
-    #if the refresh token is expired, request a new one
-    if not refresh_token_valid:
-        # The request must have a unique state value to identify it
-        state = random.randint(0,65000)
-        url = reddit.auth.url(duration="permanent", scopes=['identity'], state=state)
-        print(f"Open this URL in your browser to to authenticate: {url}")
+    # If reddit.auth.scopes() returns the scopes, the refresh token was valid. If it 
+    # doesn't, the refresh token is invalid (bad token or permissions were revoked) and a 
+    # new one needs to be generated
+    try:
+        print(f"Scopes enabled:{reddit.auth.scopes()}")
+    except:
+        print("Invalid refresh token!")
+        # Request a new refresh token
+        refresh_token = get_token()
+        # Replace old token with new token in praw.ini
+        with fileinput.input("praw.ini", inplace=1) as init:
+            for line in init:
+                if "refresh_token" in line:
+                    line = line.replace(line, f"refresh_token={refresh_token}")
+                    print(line)
+                else:
+                    print(line, end='')
+        # try again from the beginning using recursion. Return afterwards to avoid 
+        # recursing after bot process ends
+        main()
+        return 0
+
 
     subreddit = reddit.subreddit("botprovingground")
     commentLog = open("commentlog.txt", 'w')
