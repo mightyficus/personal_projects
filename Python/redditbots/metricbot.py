@@ -4,7 +4,43 @@ This is a simple reddit bot that takes a temperature and converts it into its co
 fahrenheit, and vice versa). It only works when temperature unit is specified. As of 4/2/19, it won't respond to
 comments that it has already responded to, even upon cold starts. Comment log is found in commentlog.txt.
 
-Copyright © 2019 John Cooper Hopkin. All rights reserved. Contact the owner at coop.hopkin@gmail.com with any questions.
+The praw.ini file should look like this:
+
+    [DEFAULT]
+    # A boolean to indicate whether or not to check for package updates.
+    check_for_updates=True
+
+    # Object to kind mappings
+    comment_kind=t1_
+    message_kind=t4_
+    redditor_kind=t2_
+    submission_kind=t3_
+    subreddit_kind=t5_
+
+    # The URL prefix for OAuth-related requests.
+    oauth_url=https://oauth.reddit.com
+
+    # The URL prefix for regular requests.
+    reddit_url=https://www.reddit.com
+
+    # The URL prefix for short URLs.
+    short_url=https://redd.it
+
+    [bot1]
+    client_id=<generated client id>
+    client_secret=<generated client secret
+    redirect_uri=http://localhost:8080
+    # If a refresh value hasn't been generated yet, use these values as dummies.
+    # When the bot is validated for the first time, these values should populate.
+    refresh_token=fake_value
+    expires=2013-11-11 03:10:11.992807+00:00
+
+    bot_name=ConversionBot
+    bot_version=0.0.1
+    bot_author=isitrelevantyet
+    user_agent=praw-script:%(bot_name)s:v%(bot_version)s (by u/%(bot_author)s)
+
+Copyright © 2023 Cooper Hopkin. All rights reserved. Contact the owner at coop.hopkin@gmail.com with any questions.
 """
 import praw
 import re
@@ -12,6 +48,7 @@ import os
 import random
 import socket
 from datetime import datetime, timezone, timedelta
+import fileinput
 
 
 def celToFar(celsius):
@@ -21,6 +58,7 @@ def celToFar(celsius):
 def farToCel(faren):
     return round((float(faren) - 32) * 5 / 9, 2)
 
+"""
 def get_instance():
     # create Reddit instance with info from praw.ini
     reddit = praw.Reddit('bot1')
@@ -47,44 +85,30 @@ def get_instance():
         return 1
     
     refresh_token = reddit.auth.authorize(params["code"])
-    send_message(client, f"Refresh token: {refresh_token}")
-    with open("praw.ini", "a") as init:
-        init.write("")
-    return reddit
+    send_message(client, f"Refresh token: {refresh_token}")         
 
-def receive_connection():
-    """Wait for and then return a connected socket...
-    
-    Opens a TCP connection on port 8080 and waits for a single client
-    """
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(("localhost", 8080))
-    server.listen(1)
-    client = server.accept()[0]
-    server.close()
-    return client
-
-def send_message(client, message):
-    """Send message to client and close the connection."""
-    print(message)
-    client.send(f"HTTP/1.1 200 OK\r\n\r\n{message}".encode("utf-8"))
-    client.close()
+    for line in fileinput.input("praw.ini", inplace=1):
+        if "refresh_token" in line:
+"""
 
 def main():
-    # get a refresh token
+    # check if praw.ini already has a valid refresh token
     with open("praw.ini", "r") as init:
         refresh_token_valid = False
-        for line in init.readline():
+        for line in init:
             if "refresh_token" in line:
-                expire_date = datetime.fromisoformat(init.readline().split("=")[1]) + timedelta(days=364)
+                # check if refresh token has expired
+                expire_date = datetime.fromisoformat(init.readline().split("=")[1].strip())
                 if datetime.now(timezone.utc) < expire_date:
                     refresh_token_valid = True
 
-    if refresh_token_valid:
-        reddit = praw.Reddit['bot1']
-    else:
-        reddit = get_instance()
+    reddit = praw.Reddit('bot1')
+    #if the refresh token is expired, request a new one
+    if not refresh_token_valid:
+        # The request must have a unique state value to identify it
+        state = random.randint(0,65000)
+        url = reddit.auth.url(duration="permanent", scopes=['identity'], state=state)
+        print(f"Open this URL in your browser to to authenticate: {url}")
 
     subreddit = reddit.subreddit("botprovingground")
     commentLog = open("commentlog.txt", 'w')
