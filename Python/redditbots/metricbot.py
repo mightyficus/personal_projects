@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 This is a simple reddit bot that takes a temperature and converts it into its complementary format (celsius ->
 fahrenheit, and vice versa). It only works when temperature unit is specified. As of 4/2/19, it won't respond to
@@ -9,6 +9,9 @@ Copyright © 2019 John Cooper Hopkin. All rights reserved. Contact the owner at 
 import praw
 import re
 import os
+import random
+import socket
+from datetime import datetime, timezone, timedelta
 
 
 def celToFar(celsius):
@@ -18,9 +21,71 @@ def celToFar(celsius):
 def farToCel(faren):
     return round((float(faren) - 32) * 5 / 9, 2)
 
+def get_instance():
+    # create Reddit instance with info from praw.ini
+    reddit = praw.Reddit('bot1')
+    # Generate refresh token
+    state = str(random.randint(0,65000))
+    url = reddit.auth.url(duration="permanent", scopes=['identity'], state=state)
+    print(f"Open this URL in your browser to to authenticate: {url}")
+
+    client = receive_connection()
+    data = client.recv(1024).decode("utf-8")
+    param_tokens = data.split(" ", 2)[1].split("?", 1)[1].split("&")
+    params = {
+        key: value for (key, value) in [token.split("=") for token in param_tokens]
+    }
+
+    if state != params["state"]:
+        send_message(
+            client,
+            f"State mismatch. Expected{state} Received: {params['state']}",
+        )
+        return 1
+    elif "error" in params:
+        send_message(client, params["error"])
+        return 1
+    
+    refresh_token = reddit.auth.authorize(params["code"])
+    send_message(client, f"Refresh token: {refresh_token}")
+    with open("praw.ini", "a") as init:
+        init.write("")
+    return reddit
+
+def receive_connection():
+    """Wait for and then return a connected socket...
+    
+    Opens a TCP connection on port 8080 and waits for a single client
+    """
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("localhost", 8080))
+    server.listen(1)
+    client = server.accept()[0]
+    server.close()
+    return client
+
+def send_message(client, message):
+    """Send message to client and close the connection."""
+    print(message)
+    client.send(f"HTTP/1.1 200 OK\r\n\r\n{message}".encode("utf-8"))
+    client.close()
 
 def main():
-    reddit = praw.Reddit('bot1')
+    # get a refresh token
+    with open("praw.ini", "r") as init:
+        refresh_token_valid = False
+        for line in init.readline():
+            if "refresh_token" in line:
+                expire_date = datetime.fromisoformat(init.readline().split("=")[1]) + timedelta(days=364)
+                if datetime.now(timezone.utc) < expire_date:
+                    refresh_token_valid = True
+
+    if refresh_token_valid:
+        reddit = praw.Reddit['bot1']
+    else:
+        reddit = get_instance()
+
     subreddit = reddit.subreddit("botprovingground")
     commentLog = open("commentlog.txt", 'w')
 
