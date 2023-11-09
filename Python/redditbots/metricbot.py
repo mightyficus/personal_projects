@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 """
-This is a simple reddit bot that takes a temperature and converts it into its complementary format (celsius ->
-fahrenheit, and vice versa). It only works when temperature unit is specified. As of 4/2/19, it won't respond to
-comments that it has already responded to, even upon cold starts. Comment log is found in commentlog.txt.
+This is a reddit bot for temperature conversion between Celsius and Fahrenheit
 
 The praw.ini file should look like this:
 
@@ -33,7 +31,6 @@ The praw.ini file should look like this:
     # If a refresh value hasn't been generated yet, use these values as dummies.
     # When the bot is validated for the first time, these values should populate.
     refresh_token=fake_value
-    expires=2013-11-11 03:10:11.992807+00:00
 
     bot_name=ConversionBot
     bot_version=0.0.1
@@ -51,11 +48,11 @@ from datetime import datetime, timezone, timedelta
 import fileinput
 
 
-def celToFar(celsius):
+def cel_to_far(celsius):
     return round((float(celsius) * 9 / 5) + 32, 2)
 
 
-def farToCel(faren):
+def far_to_cel(faren):
     return round((float(faren) - 32) * 5 / 9, 2)
 
 def get_token():
@@ -150,21 +147,25 @@ def main():
                 else:
                     print(line, end='')
         # try again from the beginning using recursion. Return afterwards to avoid 
-        # recursing after bot process ends
+        # recursing restarting process after successful bot process ends
         main()
         return 0
 
 
     subreddit = reddit.subreddit("botprovingground")
-    commentLog = open("commentlog.txt", 'w')
+    
+    # precompile the regex string to apply to each comment
+    passiveregex = re.compile("(-?\d+\.?(\d+)?) (degrees?) (\w+)")
+    activeregex = re.compile("^(!convert).+?(-?\d+)\s?([FC]).+?(\sto\s)([FC]).*?")
 
-    if not os.path.isfile("posts_replied_to.txt"):
-        posts_replied_to = []
-    else:
-        with open("posts_replied_to.txt", "r") as f:
-            posts_replied_to = list(filter(None, f.read().split("\n")))
+    # for comment in subreddit.stream.comments(skip_existing=True):
+    #     m = passiveregex.search(comment.body, re.IGNORECASE)
+    #     active = activeregex.search(comment.body. re.IGNORECASE)
 
-    try:
+    #     if comment.author == reddit.user.me():
+    #         pass
+
+    """try:
         # precompile the regex string to apply to each comment
         passiveregex = re.compile("(-?\d+\.?(\d+)?) (degrees?) (\w+)")
         activeregex = re.compile("^(!convert).+?(-?\d+)\s?([FC]).+?(\sto\s)([FC]).*?")
@@ -238,6 +239,7 @@ def main():
             for item in posts_replied_to:
                 f.write(str(item) + '\n')
         return 1
+"""
 
-
-main()
+if __name__ == "__main__":
+    main()
