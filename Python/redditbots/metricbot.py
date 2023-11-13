@@ -37,11 +37,12 @@ The praw.ini file should look like this:
     bot_author=isitrelevantyet
     user_agent=praw-script:%(bot_name)s:v%(bot_version)s (by u/%(bot_author)s)
 
+
+Functions adapted or copied from external sources noted in the function 
 Copyright © 2023 Cooper Hopkin. All rights reserved. Contact the owner at coop.hopkin@gmail.com with any questions.
 """
 import praw
 import re
-import os
 import random
 import socket
 from datetime import datetime, timezone, timedelta
@@ -49,14 +50,23 @@ import fileinput
 
 
 def cel_to_far(celsius):
+    """Convert Celsius to Fahrenheit"""
+
     return round((float(celsius) * 9 / 5) + 32, 2)
 
 
 def far_to_cel(faren):
+    """Convert Fahrenheit to Celsius"""
+
     return round((float(faren) - 32) * 5 / 9, 2)
 
 def get_token():
-    # Create a temporary instance to retrieve a refresh token
+    """ Create a temporary Reddit instance to retrieve a refresh token
+
+        Function adapted from the main function here:
+        https://praw.readthedocs.io/en/stable/tutorials/refresh_token.html#refresh-token
+    """
+
     reddit_temp = praw.Reddit('bot1')
 
     # Generate an authorization token
@@ -93,12 +103,13 @@ def get_token():
     print(refresh_token)
     send_message(client, f"Refresh token: {refresh_token}")
     return refresh_token
-
         
 def receive_connection():
-    """
-    Wait for and then return a connected socket.
-    Opens a TCP connection on port 8080, and waits for a single client.
+    """Wait for and then return a connected socket.
+
+        Opens a TCP connection on port 8080, and waits for a single client.
+        Copied from receive_connection() function here:
+        https://praw.readthedocs.io/en/stable/tutorials/refresh_token.html#refresh-token
     """
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,7 +121,12 @@ def receive_connection():
     return client
 
 def send_message(client, message):
-    # Send message to client and close the connection.
+    """Send message to client and close the connection.
+
+        Copied from send_message() function here:
+        https://praw.readthedocs.io/en/stable/tutorials/refresh_token.html#refresh-token
+    """
+
     print(message)
     client.send(f"HTTP/1.1 200 OK\r\n\r\n{message}".encode("utf-8"))
     client.close()
@@ -147,7 +163,7 @@ def main():
                 else:
                     print(line, end='')
         # try again from the beginning using recursion. Return afterwards to avoid 
-        # recursing restarting process after successful bot process ends
+        # the recursion from restarting process after successful bot process ends
         main()
         return 0
 
@@ -165,81 +181,105 @@ def main():
     #     if comment.author == reddit.user.me():
     #         pass
 
-    """try:
-        # precompile the regex string to apply to each comment
-        passiveregex = re.compile("(-?\d+\.?(\d+)?) (degrees?) (\w+)")
-        activeregex = re.compile("^(!convert).+?(-?\d+)\s?([FC]).+?(\sto\s)([FC]).*?")
+    # precompile the regex string to apply to each comment
+    passiveregex = re.compile("(?P<temp>-?\d+\.?(\d+)?) ?((?:degrees?)|°)? ?(?P<pre_unit>[FC])", re.IGNORECASE)
+    activeregex = re.compile("^(!convert).+?(?P<temp>-?\d+)\s?((?:degrees?)|°)?\s?(?P<pre_unit>[FC])(\sto\s)([FC])", re.IGNORECASE)
 
-        # finds each comment for the specified subreddit
-        for comment in subreddit.stream.comments():
 
-            # determines if the comment has a temperature to be converted
-            m = passiveregex.search(comment.body, re.IGNORECASE)
-            active = activeregex.search(comment.body. re.IGNORECASE)
+    # finds each comment for the specified subreddit
+    for comment in subreddit.stream.comments(skip_existing=True):
+        try:
+        # We shouldn't respond to the bot comments, otherwise we get an infinite loop
+            if comment.author != 'conversion_bot_test':
 
-            if comment in posts_replied_to:
-                pass
+                # determines if the comment has a temperature to be converted
+                passive = passiveregex.search(comment.body)
+                active = activeregex.search(comment.body,)
+                # If command word (!convert) is found, convert temp
+                if active:
+                    # DEBUG: Print comment that's being responded to
+                    print(f"Active response: {str(comment.body)}")
 
-            # if passive temperature string is found and "Conversion Bot says: " is not in the string,
-            # convert the temperature
-            elif m and not re.search("Conversion Bot says: ", comment.body, re.I):
-                print(str(m[5]))
-                commentLog.write(comment.body + '\n')
-                posts_replied_to.append(comment)
+                    # Set the temperature we'll be converting
+                    pre_temp = float(active['temp'])
 
-                # Celsius to Fahrenheit
-                if str(m[5]).lower()[0:2] == "c":
-                    cel = m[1]
-                    far = celToFar(cel)
-                    conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Celsius is " + str(far) + \
-                                 " degrees Fahrenheit!\n\nThis was your friendly neighborhood Conversion Bot!" + \
-                                 "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
-                    comment.reply(conv_reply)
-                    commentLog.write('\t' + conv_reply + '\n')
+                    # Set the pre/post unit to longhand unit name and convert
+                    # temperature according to specified pre-conversion unit
+                    if active['pre_unit'][0].lower() == 'c':
+                        pre_unit = 'Celsius'
+                        post_unit = 'Fahrenheit'
+                        post_temp = cel_to_far(pre_temp)
+                    elif active['pre_unit'][0].lower() == 'c':
+                        pre_unit = 'Fahrenheit'
+                        post_unit = 'Celsius'
+                        post_temp = far_to_cel(pre_temp)
+                    # If the unit we are converting from is missing, assume a bad 
+                    # comment and just start again with next comment
+                    # If regex works, this should never trigger
+                    else:
+                        continue
 
-                # Fahrenheit to Celsius
-                elif m.toLower()[5] == "fahrenheit" or m[5] == "Fahrenheit":
-                    faren = m[1]
-                    cel = farToCel(faren)
-                    conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Fahrenheit is " + str(cel) + \
-                                 " degrees Celsius!\n\nThis was your friendly neighborhood Conversion Bot!" + \
-                                 "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
-                    comment.reply(conv_reply)
-                    commentLog.write('REPLY:' + conv_reply + '\n')
+                # if passive temperature string is found convert the temperature
+                elif passive:
+                    # DEBUG: Print comment being responded to
+                    print(f"Passive Response: {str(comment.body)}")
 
-            # If command word (!convert) is found, convert the temperature
-            elif active:
-                commentLog.write(comment.body + '\n')
-                posts_replied_to.append(comment)
+                    # Set the temperature we'll be converting
+                    pre_temp = float(passive['temp'])
 
-                # convert from celsius to fahrenheit
-                if (active[2] == 'C' or active[2] == 'c') and (active[4] == 'F' or active[4] == 'f'):
-                    cel = active[1]
-                    far = celToFar(cel)
-                    conv_reply = "Conversion Bot says: " + str(active[1]) + " degrees Celsius is " + str(far) + \
-                                 " degrees Fahrenheit!\n\nThis was your friendly neighborhood Conversion Bot!" + \
-                                 "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
-                    comment.reply(conv_reply)
-                    commentLog.write('\t' + conv_reply + '\n')
+                    # Set the pre/post unit to longhand unit name and convert
+                    # temperature according to specified pre-conversion unit
+                    if passive['pre_unit'][0].lower() == 'c':
+                        pre_unit = 'Celsius'
+                        post_unit = 'Fahrenheit'
+                        post_temp = cel_to_far(pre_temp)
+                    elif passive['pre_unit'][0].lower() == 'f':
+                        pre_unit = 'Fahrenheit'
+                        post_unit = 'Celsius'
+                        post_temp = far_to_cel(pre_temp)
+                    # If the unit we are converting from is missing, assume a bad 
+                    # comment and just start again with next comment
+                    # If regex works, this should never trigger
+                    else:
+                        continue
 
-                # convert from fahrenheit to celsius
-                elif (active[2] == 'F' or active[2] == 'f') and (active[4] == 'C' or active[4] == 'c'):
-                    far = active[1]
-                    cel = farToCel(far)
-                    conv_reply = "Conversion Bot says: " + str(active[1]) + " degrees Fahrenheit is " + str(cel) + \
-                                 " degrees Celsius!\n\nThis was your friendly neighborhood Conversion Bot!" + \
-                                 "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
-                    comment.reply(conv_reply)
-                    commentLog.write('\t' + conv_reply + '\n')
+                    """if str(m[5]).lower()[0] == "c":
+                        before_conv = m[1]
+                        after_conv = cel_to_far(cel)
+                        conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Celsius is " + str(far) + \
+                                        " degrees Fahrenheit. This was your friendly neighborhood Conversion Bot!" + \
+                                        "\n\n^(I am a bot. If something goes wrong, please PM my creator, Isitrelevantyet.)"
+                        comment.reply(conv_reply)
 
-    except (KeyboardInterrupt, SystemExit):
-        commentLog.close()
-        # print("in the except clause")
-        with open('posts_replied_to.txt', 'a') as f:
-            for item in posts_replied_to:
-                f.write(str(item) + '\n')
-        return 1
-"""
+                    # Fahrenheit to Celsius
+                    elif str(m[5]).toLower()[0:2] == "f":
+                        before_conv = m[1]
+                        after_conv = far_to_cel(faren)
+                        conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Fahrenheit is " + str(cel) + \
+                                        " degrees Celsius!\n\nThis was your friendly neighborhood Conversion Bot!" + \
+                                        "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
+                        comment.reply(conv_reply)"""
+                    
+                # If the comment doesn't contain units to convert, move on to next comment
+                else:
+                    print(f"No Response: {str(comment.body)}")
+                    continue
+                
+                conv_reply = "Conversion Bot says: " + str(pre_temp) + " degrees "+ pre_unit + " is " + str(post_temp) + \
+                                        " degrees "+ post_unit +". This was your friendly neighborhood Conversion Bot!" + \
+                                        "\n\n^(I am a bot. If something goes wrong, please PM my creator, Isitrelevantyet.)"
+
+                comment.reply(conv_reply)
+            else: 
+                continue
+        except KeyboardInterrupt:
+            print("Exiting!")
+            return 0
+        except:
+            print("System Error! Exiting...")
+            return 1
+            
+    return 0
 
 if __name__ == "__main__":
     main()
