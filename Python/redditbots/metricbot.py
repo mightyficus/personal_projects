@@ -9,11 +9,11 @@ The praw.ini file should look like this:
     check_for_updates=True
 
     # Object to kind mappings
-    comment_kind=t1_
-    message_kind=t4_
-    redditor_kind=t2_
-    submission_kind=t3_
-    subreddit_kind=t5_
+    comment_kind=t1
+    message_kind=t4
+    redditor_kind=t2
+    submission_kind=t3
+    subreddit_kind=t5
 
     # The URL prefix for OAuth-related requests.
     oauth_url=https://oauth.reddit.com
