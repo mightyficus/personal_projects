@@ -45,7 +45,6 @@ import praw
 import re
 import random
 import socket
-from datetime import datetime, timezone, timedelta
 import fileinput
 
 
@@ -174,13 +173,6 @@ def main():
     passiveregex = re.compile("(-?\d+\.?(\d+)?) (degrees?) (\w+)")
     activeregex = re.compile("^(!convert).+?(-?\d+)\s?([FC]).+?(\sto\s)([FC]).*?")
 
-    # for comment in subreddit.stream.comments(skip_existing=True):
-    #     m = passiveregex.search(comment.body, re.IGNORECASE)
-    #     active = activeregex.search(comment.body. re.IGNORECASE)
-
-    #     if comment.author == reddit.user.me():
-    #         pass
-
     # precompile the regex string to apply to each comment
     passiveregex = re.compile("(?P<temp>-?\d+\.?(\d+)?) ?((?:degrees?)|°)? ?(?P<pre_unit>[FC])", re.IGNORECASE)
     activeregex = re.compile("^(!convert).+?(?P<temp>-?\d+)\s?((?:degrees?)|°)?\s?(?P<pre_unit>[FC])(\sto\s)([FC])", re.IGNORECASE)
@@ -242,23 +234,6 @@ def main():
                     # If regex works, this should never trigger
                     else:
                         continue
-
-                    """if str(m[5]).lower()[0] == "c":
-                        before_conv = m[1]
-                        after_conv = cel_to_far(cel)
-                        conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Celsius is " + str(far) + \
-                                        " degrees Fahrenheit. This was your friendly neighborhood Conversion Bot!" + \
-                                        "\n\n^(I am a bot. If something goes wrong, please PM my creator, Isitrelevantyet.)"
-                        comment.reply(conv_reply)
-
-                    # Fahrenheit to Celsius
-                    elif str(m[5]).toLower()[0:2] == "f":
-                        before_conv = m[1]
-                        after_conv = far_to_cel(faren)
-                        conv_reply = "Conversion Bot says: " + str(m[1]) + " degrees Fahrenheit is " + str(cel) + \
-                                        " degrees Celsius!\n\nThis was your friendly neighborhood Conversion Bot!" + \
-                                        "\n\nI am a bot. If something goes wrong, please PM my creator, Isitrelevantyet."
-                        comment.reply(conv_reply)"""
                     
                 # If the comment doesn't contain units to convert, move on to next comment
                 else:
