@@ -1,42 +1,5 @@
 """
-Notes on Elliptic curve cryptology
-
-Projective planes:
-    Projective planes are an extension of the Euclidean plane - it essentially involves
-    adding a "horizon line," or a line that represents infinity. Using this, we can extend
-    the Fundamental Theorem of Algebra to generalize elliptic curves.
-Fundamental Theorem of Algebra:
-    A polynomial of degree n can have, at most, n roots (Where the polynomial intersects
-    y=0), and has *exactly* n roots when counting complex numbers and multiplicities
-Bezouts Theorem:
-    Two algebraic curves of degrees m and n that have no common components can have, at
-    most, mn points of intersection, and it has *exactly* mn points when including complex
-    numbers, multiplicities, and points at infinity
-Homogeneous coordinates:
-    Embed a n-dimensional plane on a n+1-dimensional plane (like a line on a 2-d plane).
-    Every point on that line, called the point range, can be paired with a line through the 
-    origin. If the point (a,1) on the line y=1, then the equation of the line is x=ay.
-    This gives us a 1:1 correspondance with the range of points with the set of all lines
-    passing through the origin, called a pencil of lines.   
-    Any line that goes through the point (a,1) can be scaled by an arbitrary value k, and 
-    still be on the same line. The ratio between the x and y coordinates remain invariant,
-    as long as the point remains on the same line: x:y = kx:ky (except on the origin).
-    Therefore, we use the notation (x:y) to refer to points on the line, with the 
-    understanding that for any non-zero value of k, the points (x:y) and (kx:ky) really
-    represent the same point, because they are connected to the same line through the origin.
-    As a result, the line at y=0, which corresponds to the point at infinity, will always have 
-    a y-value of 0, so the notation for the point at infinity is (x:0).
-    The only invalid coordinate is (0:0), because the origin is on every line, and cannot be 
-    used to describe any one line.
-    This also maps to higher degree planes, such as a 2D plane in 3D space. For any line in 3D
-    space, it can be mapped to a projected coordinate of (x:y:z). However, any horizontal line on the 
-    Projectively extended real line
-        There is only one line that cannot be reached this way, which is y=0. However, we can 
-        let the horizontal line through the origin correspond to the point at infinity.
-        An important distinction between the extended real line and the projectively extended
-        real line is that the projectively extended real line has a neutral infinity, as opposed 
-        to signed infinities.
-
+Factor an integer using the lenstra curve algorithm
 """
 
 from random import randint
