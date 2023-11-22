@@ -32,6 +32,18 @@ def prime_list(limit):
                 seive[prime_mult] = False
     return primes
 
+def modular_inv(a,b):
+    """Finds modular inverse
+    Only numbers coprime to b have a modular inverse (mod c)
+    
+    Returns inverse, unused helper and gcd
+    """
+    if b == 0:
+        return 1, 0, a
+    q,r = divmod(a, b)
+    x,y,g = modular_inv(b,r)
+    return y, x - q * y, g
+
 # def lenstra_curve_algorithm(n, limit):
 #     """Lentstra's Elliptic-curve algoritm for factoring. Limit is max work permitted
     

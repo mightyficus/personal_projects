@@ -10,7 +10,7 @@ def lcm(x,y):
 
 def trial_division(n):
     """Return a list of prime factors for a natural number in the form (prime, power),
-        e.g. 2^10 is represented as (2,10)
+        e.g. 2^10 is represented as (2,10). Returns all factors.
     
     Systematically tests if n is divisible by any smaller number
 
@@ -48,7 +48,6 @@ def trial_division(n):
 
     # All primes are in the form 6k +/- 1
     factor = 5
-    bigO = 0
     while factor <= (n**0.5 + 1):
         # factor 6k + 1 first
         if n % (factor + 2) == 0:
@@ -66,12 +65,8 @@ def trial_division(n):
                 n //= factor
             factors.append((factor, i))
         factor += 6
-        bigO += 1
     if n != 1:
-        bigO += 1
         factors.append((n,1))
-        
-    print(f"Times run: {bigO}")
     return factors
 
 def seive_of_eratosthenes(limit):
@@ -101,8 +96,57 @@ def seive_of_eratosthenes(limit):
                 seive[prime_mult] = False
     return primes
 
+def pollard_rho(n):
+    """Used to factorize a number n = p*q, where p is a non-trivial factor. Only returns one factor
+    
+    * A polynomial modulo n, called g(x), is used to generate a pseudo-random 
+        sequence. This must be polynomial, and should have an added arbitrary 
+        c value
+    * A starting value, say 2, is chosen, and the sequence continues as 
+        x_1 = g(2), x_2 = g(g(2)), x_3 = g(g(g(2))), etc. 
+    * 2 variables are initialised at the same value. One value T, the tortoise,
+        will have g(t) interatively applied to it. A second value H, the hare,
+        will have g(g(h)) iteratively applied to it.
+    * The greatest common denominator of T - H and n is taken.
+        If gcd(T - H, n) > 1, there are two cases.
+        * T = H -> gcd(0,n) = n. This is a fail state, and c is changed
+        * T != H -> gcd(T - H, n) = d, d|n and is non-trivial
+    * One of those two options must occur. The claim us that the and the first 
+        result is not likely, and if the second result occurs, it will happen
+        quickly
+    """
+    def trial(g):
+        # tortoise and hare values
+        t = 2
+        h = 2
+
+        # Keep repeating until the greatest common denominator of
+        # the difference of t and h and n is > 0
+        while True:
+            t = g(t)
+            h = g(g(h))
+            d = math.gcd(t - h, n)
+
+            # When t - h = n, algorithm fails, even if n is composite.
+            # If this happens, try again with a different value of c
+            if d == n:
+                return False
+            elif d > 1:
+                return d
+            
+    c = 1
+    while True:
+        # Polynomial modulus function used to generate 
+        # a pseudorandom sequence using a arbitrary c
+        def g(x):
+            return (x**2 + c) % n
+        d = trial(g)
+        if d:
+            return d
+        c += 1
+
 def use_algorithms(input_val):
-    print("Use trial division to print the prime factors of a number:")
+    print("Use trial division to print the prime factors of the entered number:")
     factors = trial_division(int(input_val))
     print("Factors are: ", end='')
     for factor in factors:
@@ -143,13 +187,40 @@ def use_algorithms(input_val):
 
     
 if __name__ == "__main__":
-    print("This program is practice for prime algorithms.")
+    """print("This program is practice for prime algorithms.")
     print("If a float is entered, it will be truncated to a string.")
     try:
         input_val = int(float(input("Enter a number: ")) // 1)
         use_algorithms(input_val)
     except ValueError:
-        print("Invalid Input!")
+        print("Invalid Input!")"""
+    from rsa.prime import getprime
+    import timeit
+
+    bits = 96
+
+    def test_rho():
+        p, q = getprime(bits // 2), getprime(bits // 2)
+        n = p*q
+        print(f"p={p}, q={q}, n={n}")
+        d = pollard_rho(n)
+
+    def test_trial_div():
+        p, q = getprime(bits // 2), getprime(bits // 2)
+        n = p*q
+        print(f"p={p}, q={q}, n={n}")
+        d = trial_division(n)
+
+    print("Pollard Rho Algorithm:")
+    res = timeit.Timer(test_rho).timeit(number = 100)
+    print(f"Pollard Rho: Average of {round(res, 3)}s for {bits} bits")
+    print()
+    print()
+
+    #print("Trial Division Algorithm")
+    #res = timeit.Timer(test_trial_div).timeit(number=100)
+    #print(f"Trial Division: Average of {round(res, 3)}s for {bits} bits")
+
     
     
     
