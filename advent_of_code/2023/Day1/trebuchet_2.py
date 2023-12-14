@@ -36,8 +36,8 @@ with open("input.txt","r") as infile:
                 elif line[i] == match[0][0] and line[i + 1] == match[0][1]:
                     digits.append(str(match[1]))
                     break
-        # if line[-1].strip().isdigit():
-        #     digits.append(str(line[-1]))
+        if line[-1].strip().isdigit():
+            digits.append(str(line[-1]))
 
         if len(digits) >= 2:
             num = int(digits[0] + digits[-1])
