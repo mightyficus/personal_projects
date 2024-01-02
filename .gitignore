@@ -1,4 +1,5 @@
 *test*
 *.venv
+*.bak
 __pycache
 .DS_Store
