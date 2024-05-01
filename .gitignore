@@ -1,6 +1,8 @@
 *test*
 *.venv
 *.bak
-__pycache
+__pycache__
 .DS_Store
 .vscode
+dict_*
+secret*
