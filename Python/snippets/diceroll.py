@@ -104,6 +104,7 @@ def main():
         main()
     except:
         print("Goodbye!")
+        return
         
     
 if __name__ == "__main__":
