@@ -1,7 +1,9 @@
 # zsh alias file
 
 #colored cat
-alias cat='highlight $1 --out-format xterm256 -l --force -s manxome'
+alias cat='highlight $1 --out-format xterm256 --force -s manxome'
+#colored cat with line numbers
+alias lcat='cat -l'
 
 # Pipe highlight to less
 export LESSOPEN="| $(which highlight) %s --out-format xterm256 -l --force -s manxome --no-trailing-nl"
@@ -30,3 +32,27 @@ alias hgrep='fc -l 0 | grep'
 
 # dig with just answers
 alias digr='dig +nostats +nocomments +nocmd'
+
+#remove known host from .ssh/known-hosts
+alias rm-host="ssh-keygen -f '/home/mightyficus/.ssh/known_hosts' -R"
+
+# ssh into ubiquiti machines, fingerprint doesn't matter
+function ussh
+{
+	ssh 	-o "ConnectTimeout 3" \
+		-o "StrictHostKeyChecking no" \
+	    	-o "UserKnownHostsFile /dev/null" \
+		-i /home/mightyficus/.ssh/ui-laptop-wsl \
+		"$@"
+}
+
+# ssh into ubiquiti devices (fingerprint doesn't matter, use legacy protocol)
+function uscp
+{
+	exec scp	-O
+			-o "ConnectTimeout 3" \
+			-o "StrictHostKeyChecking no" \
+	    		-o "UserKnownHostsFile /dev/null" \
+			-i /home/mightyficus/.ssh/ui-laptop-wsl \
+			"$@"
+}
