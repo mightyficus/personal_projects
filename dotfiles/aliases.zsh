@@ -1,6 +1,13 @@
 # zsh alias file
 
-#colored cat
+# common aliases
+alias ..='cd ..'
+alias install='sudo apt install'
+alias upgrade='sudo apt update && sudo apt upgrade'
+alias update='echo "apt" && sudo apt update && echo "snap" && sudo snap refresh && echo "flatpack" &&  sudo flatpak update'
+alias search='sudo apt-cache search -n'
+
+# colored cat
 alias cat='highlight $1 --out-format xterm256 --force -s manxome'
 #colored cat with line numbers
 alias lcat='cat -l'
