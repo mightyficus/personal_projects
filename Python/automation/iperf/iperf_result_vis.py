@@ -6,13 +6,22 @@
 
 #imports
 import json
+import argparse
 import datetime
 import matplotlib.pyplot as plt
 
+# Global variables
+SERVER_IP = ''
+
+def getargs(): 
+    parser = argparse.ArgumentParser(description='Visualize iperf3 performance and run command if degradation found')
+    
+    parser.add_argument('-s','--server', help='IP of iperf3 server', required=True)
+    parser.add_argument('-p', '--port', help='Port iperf3 is running on', required=True)
 
 def main(): 
     # Load json data from latest iperf test
-    with open('iperf_test.json', 'r') as f:
+    with open('iperf_60s.json', 'r') as f:
         data = json.load(f)
 
     # Start gathering data for line graph
@@ -29,6 +38,8 @@ def main():
     
     # Create the graph
     plt.plot(intervals, speeds)
+    ax = plt.gca()
+    ax.set_ylim(0,1200)
     plt.xlabel("Seconds")
     plt.ylabel("Speed (Mbps)")
     plt.title(title)
