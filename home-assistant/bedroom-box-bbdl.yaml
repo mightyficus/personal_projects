@@ -879,10 +879,10 @@ microphone:
 micro_wake_word:  
   vad:
   models: 
-    - model: ${micro_wake_word_model_1}
+#    - model: ${micro_wake_word_model_1}
     - model: ${micro_wake_word_model_2}
     - model: ${micro_wake_word_model_3}
-    - model: ${micro_wake_word_model_4}
+#    - model: ${micro_wake_word_model_4}
   on_wake_word_detected:
     - if:
         condition:
