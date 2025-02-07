@@ -1,4 +1,3 @@
-*test*
 *.venv
 *.bak
 __pycache__

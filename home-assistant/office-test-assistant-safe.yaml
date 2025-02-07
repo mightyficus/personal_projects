@@ -1,0 +1,17 @@
+substitutions:
+  name: esp32-s3-box-3-9a537c
+  friendly_name: Office Test Assistant
+packages:
+  esphome.voice-assistant: github://esphome/wake-word-voice-assistants/esp32-s3-box-3/esp32-s3-box-3.yaml@main
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+api:
+  encryption:
+    key: "6kxWi8YbjCa/FmbTu7yM1pFeO/o1OVoexOmWMxkOYjw="
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
