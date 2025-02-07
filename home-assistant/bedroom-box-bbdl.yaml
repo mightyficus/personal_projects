@@ -3,8 +3,8 @@
 ## Once added to HA changing the device name can lead to connection issues, between HA and the device.
 
 substitutions:
-  name: esp32-s3box-3-office
-  friendly_name: Office Box Test
+  name: esp32-s3box-3-bedroom
+  friendly_name: Bedroom Box Assistant
   
   external_media_player: your_media_player  ##change this to your external media player enity_id: do not include media_player.
   home_assistant_host: http://homeassistant.local:8123 ##change to the full url or IP of your HA server including port
