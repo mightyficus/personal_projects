@@ -79,7 +79,12 @@ def main(args):
     plt.title(title)
     plt.savefig(f'iperf-results_{datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")}.png')
     
-    
+    if speed_flag:
+        try:
+            p = subprocess.Popen(args['command'].split(), stdout=subprocess.PIPE)
+            out, err = p.communicate()
+        except Exception as e:
+            print(f"Something went wrong while running {str(args['command'])}: {str(e)}")
     
 if __name__ == '__main__':
     args = getargs()
