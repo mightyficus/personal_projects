@@ -670,6 +670,10 @@ sensor:
     temperature:
       name: "S3 Temperature"
       id: s3temp
+      # DEBUG: I added the unit of measurement arg here, may need to replace if there are issues. Look at line 1835
+      unit_of_measurement: "°F"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
     humidity:
       name: "S3 Humidity"
     update_interval: 60s
@@ -1827,7 +1831,8 @@ display:
           } else {
             it.strftime(160, 88, id(my_font2), TextAlign::CENTER, "%l:%M%p", id(ha_time).now());
           }
-          it.printf(160, 181, id(my_font2), light_blue, TextAlign::CENTER, "%.f°C", id(s3temp).state); // remove for no sensor version
+          // DEBUG: I manually replaced °C with °F here, may need to change back if issues
+          it.printf(160, 181, id(my_font2), light_blue, TextAlign::CENTER, "%.f°F", id(s3temp).state); // remove for no sensor version
          
       - id: ota_page ##### firmware uploading page #####
         lambda: |-
