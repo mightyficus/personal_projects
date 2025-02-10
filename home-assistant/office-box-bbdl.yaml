@@ -117,7 +117,7 @@ api:
     - lambda: |-
         id(api_connection) = false;
   encryption:
-    key: "6kxWi8YbjCa/FmbTu7yM1pFeO/o1OVoexOmWMxkOYjw="
+    key: "iKI6ofv2a/cznRBxyVrKuIwnWuIxXrz6FH3WLj9/2ac="
 
 ota:
   - platform: esphome
