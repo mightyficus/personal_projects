@@ -5,3 +5,4 @@ __pycache__
 .vscode
 dict_*
 *Dexcom_Monitor/
+*secrets*
