@@ -1,0 +1,49 @@
+esphome:
+  name: esp8266-test
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: U2WSlqPY9aqXZCRNN7ZNiSbYyGhtrKan2pLC2zCsTkc=
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  ssid: "Cooper Work Test Console"
+  password: "ubntubnt"
+  manual_ip:
+    static_ip: 192.168.10.86
+    gateway: 192.168.10.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp8266-Test Fallback Hotspot"
+    password: "2xNEib1iYuHR"
+
+captive_portal:
+    
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+  scan: true 
+  id: bus_a
+
+sensor:
+  - platform: bme280_i2c
+    temperature:
+      name: "BME280 Temperature"
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 10s
