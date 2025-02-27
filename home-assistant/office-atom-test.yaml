@@ -26,6 +26,10 @@ ota:
     id: ota_esphome
 
 wifi:
+  manual_ip:
+    static_ip: 192.168.20.131
+    gateway: 192.168.20.1
+    subnet: 255.255.255.0
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 

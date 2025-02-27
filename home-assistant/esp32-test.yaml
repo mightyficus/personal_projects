@@ -1,0 +1,46 @@
+esphome:
+  name: esp32-wroom-test
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: YBnjbCedNZrAzpA8WcGS4lJJI+8dNYChupBH6f0d4cw=
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  ssid: "Test IoT"
+  password: "ubntubnt"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Wroom-Test"
+    password: "m2pLHZ4ngF99"
+
+captive_portal:
+    
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+  id: bus_a
+
+sensor:
+  - platform: bme280_i2c
+    temperature:
+      name: "BME280 Temperature"
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    update_interval: 10s
