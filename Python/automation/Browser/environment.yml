@@ -1,0 +1,9 @@
+name: selenium-automation
+channels:
+  - conda-forge
+  - default
+  - defaults
+dependencies:
+  - python=3.12
+  - selenium
+  - webdriver-manager
