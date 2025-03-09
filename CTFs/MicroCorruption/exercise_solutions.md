@@ -67,6 +67,11 @@ If we add that on to an acceptable "header" (two byte address+length), we get th
 	* It compares them
 		* if they're equal, it loops until the entire string matches, and `r15` is cleared and the function returns
 		* if it doesn't, it puts the mismatched input character into `r14` and the known good character into `r15`, Then it does `r15 - r14` and stores the result in `r15`, and finally returns
+    * __MOST IMPORTANT__: The only difference between when it fails and succeeds is that on a success, `r15` is cleared.
+    * If it fails, whetever is currently in `r14` is subtracted from whetever is in `r15`, and then stored in `r15`
+    * When it returns to `<main>`, `r15` is tested to see if it's zeroed out, and if it is, it unlocks the door.
+    * It looks like when it writes the input to memory, it gets written to `0x43f0`. Code for the program starts at `0x4400`, which looks very close. Stack smash?
+    * The function that asks for input returns to `0x4460`. Try to write instructions to `0x4461` to open door?
 # Australia
 
 ## Sydney
