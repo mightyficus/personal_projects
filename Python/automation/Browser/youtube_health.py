@@ -58,19 +58,16 @@ import time
 
 options = Options()
 options.add_experimental_option("detach", True)
-# options.add_argument("--disable-extensions")
-# options.add_argument("--disable-popup-blocking")
-# options.add_argument("--disable-notifications")
-# options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
-# options.add_argument("--disable-software-rasterizer")  # Disables a software rasterizer for video playback
 
 # Make sure all required headers are present
+# Without these headers, the automation will get a 403 - Forbidden response code
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36")
 options.add_argument("accept-language=en-US,en;q=0.9")
 options.add_argument("accept-encoding=gzip, deflate, br")
 options.add_argument("referer=https://www.youtube.com/")
 
 # Disable SameSite Cookie protection
+# Without these driver options, the browser returns the error "requestStorageAccessFor: Permission denied"
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--disable-web-security")
 options.add_argument("--disable-site-isolation-trials")
@@ -86,7 +83,7 @@ driver = webdriver.Chrome(service = Service(ChromeDriverManager().install()), op
 #driver.implicitly_wait(10)
 
 # Can also use an "explicit wait", which polls the website for x amount of seconds or until an element is available
-# If the element is not found before the timeout, the program will return an error
+# If the element is not found before the timeout, the program will return an error 
 errors = [NoSuchElementException, ElementNotInteractableException]
 wait = WebDriverWait(driver, 25, ignored_exceptions=errors)
 
