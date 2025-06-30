@@ -15,7 +15,7 @@ def getargs():
     parser.add_argument('-f', '--file', help='Json file to save to. This will overwrite an existing file with the same name', required=True)
     
     # Optional arguments
-    parser.add_argument('-P', '--parallel', help='Number of parallel client streams to run (Default=1)', default=1, required=False)
+    parser.add_argument('-P', '--parallel', help='Number of parallel client streams to run (Default=5)', default=5, required=False)
     parser.add_argument('-t', '--time', help='Duration of iperf3 speed test (Will automatically skip first 10 seconds) (Default=10s)', default=10, required=False)
     parser.add_argument('-m', '--minimum', help='Throughput speed in Mbps which will trigger the command (Default=100)', default=100, required=False)
     parser.add_argument('-c', '--command', help='''Command that will be run when throughput speed falls below the given minimum speed
